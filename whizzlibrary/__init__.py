@@ -2,6 +2,11 @@
 import numpy as np
 from pymatbridge import Matlab
 
+__all__ = ["Matlab", "roundNearestQuarter", "floorNearestQuarter",
+           "errorStatistics", "kTopicsOut", "repeatMatrixCompletion", "histogramQuarters",
+           "repeatPLS", "testCombinations",
+           "plotSingInfo"]
+
 
 def roundNearestQuarter(x):
     return 25*np.round(x/25)
@@ -16,7 +21,7 @@ def floorNearestQuarter(x):
 #     mlab = Matlab()
 #     mlab.start()
 #
-#     res = mlab.run_code("cd ../MC-NMF/; path(path,genpath(pwd)); cd ..")
+#     res = mlab.run_code("cd MC-NMF/; path(path,genpath(pwd)); cd ..")
 #     if res['success']:
 #         print("Matlab connection succesfully started")
 #         return mlab

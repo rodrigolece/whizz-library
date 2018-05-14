@@ -4,8 +4,6 @@ import itertools
 from sklearn.model_selection import train_test_split
 from sklearn.cross_decomposition import PLSRegression
 
-__all__ = ["repeatPLS", "testCombinations"]
-
 
 
 def repeatPLS(range_mat, known_topics, topic_names, nb_repeats=1, nb_components=2,
