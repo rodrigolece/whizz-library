@@ -2,7 +2,7 @@
 import numpy as np
 from pymatbridge import Matlab
 
-__all__ = ["Matlab", "roundNearestQuarter", "floorNearestQuarter",
+__all__ = ["startMatlab", "roundNearestQuarter", "floorNearestQuarter",
            "errorStatistics", "kTopicsOut", "repeatMatrixCompletion", "histogramQuarters",
            "repeatPLS", "testCombinations",
            "plotSingInfo"]
@@ -15,18 +15,16 @@ def floorNearestQuarter(x):
     return 25*np.floor(x/25)
 
 
-# def startMatlab():
-#     # This function assumes MC-NMF is a subdirectory of working directory
-#
-#     mlab = Matlab()
-#     mlab.start()
-#
-#     res = mlab.run_code("cd MC-NMF/; path(path,genpath(pwd)); cd ..")
-#     if res['success']:
-#         print("Matlab connection succesfully started")
-#         return mlab
-#     else:
-#         print("Error starting Matlab")
+def startMatlab(nonnegative_dir):
+    mlab = Matlab()
+    mlab.start()
+
+    res = mlab.run_code("path(path,genpath('%s'))" % nonnegative_dir)
+    if res['success']:
+        print("Matlab connection succesfully started")
+        return mlab
+    else:
+        print("Error starting Matlab")
 
 from .matrix_completion import *
 from .plotting import *
