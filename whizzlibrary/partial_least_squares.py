@@ -83,4 +83,4 @@ def testCombinations(mat, k, topic_names, nb_repeats=1, nb_components=2,
                                  quarter_round=quarter_round, verbose=verbose)
 
     best = np.argmin(avg_rmses)
-    return (avg_rmses[best], topic_names[topic_combs[best]])
+    return (avg_rmses[best], topic_names[topic_combs[best]], topic_combs[best])

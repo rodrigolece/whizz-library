@@ -4,7 +4,6 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes  # to use the inset
 
 
 
-
 def plotSingInfo(mat, nb_vecs, topic_names):
     nb_topics = len(topic_names)
 
