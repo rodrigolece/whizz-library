@@ -3,92 +3,84 @@ import numpy as np
 import itertools
 from sklearn.model_selection import train_test_split
 from sklearn.cross_decomposition import PLSRegression
+
 from . import roundNearestQuarter, floorNearestQuarter
+from .matrix_completion import errorStatistics
 
 
 
-def repeatPLS(range_mat, known_topics, topic_names, nb_repeats=1, nb_components=2,
-              mean_fill=True, quarter_round=True, verbose=True):
-    if mean_fill:
-        filled_mat = range_mat.copy()
-        filled_mat[filled_mat == 0] = np.nan
-        # nan_mat = filled_mat.copy() # not used
-
-        means = np.nanmean(filled_mat, axis=0)
-
-        idx = np.argwhere(np.isnan(filled_mat))
-        idx_i, idx_j = idx[:,0], idx[:,1]
-        filled_mat[idx_i, idx_j] = floorNearestQuarter(means[idx_j]) # rounding here makes no significant difference
-    else:
-        filled_mat = range_mat.copy()
-
-    nb_topics, _ = range_mat.shape
+def PLSkTopicsOut(mat, known_topics, seed=0):
+    nb_topics, _ = mat.shape
 
     mask = np.zeros(nb_topics, dtype=bool)
     mask[known_topics] = 1
-    k = np.sum(~mask)                       # nb of removed topics
 
-    X = filled_mat[mask, :].T               # tranpose to use each row as observation in sklearn
-    Y = filled_mat[~mask, :].T
+    X = mat[mask, :].T               # tranpose to use each row as observation in sklearn
+    Y = mat[~mask, :].T
 
-    # the average of only the known topics
-    # X_average = np.nanmean(nan_mat[mask, :], axis=0)
-    # I don't use this because I need to split it with X and Y and this is
-    # much more complicated. Instead I use direactly the mean of X_test
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33, random_state=seed)
 
-    rmse = np.zeros(k)
-    percentage_wrong = np.zeros(k)
-    comparison_mean = np.zeros(k)
+    return X_train, X_test, Y_train, Y_test
+
+
+def repeatPLS(mat, known_topics, topic_names, nb_repeats=1, nb_components=2,
+              quarter_round=True, verbose=True):
+
+    nb_topics, _ = mat.shape
+    k = nb_topics - len(known_topics)                 # nb of removed topics
+
+    topic_error_stats = np.zeros((6, k))
 
     pls = PLSRegression(n_components=nb_components)
 
     for i in range(nb_repeats):
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33, random_state=42 + i)
-        X_average = np.mean(X_test, axis=1)   # along columns because X_test is transposed
+        X_train, X_test, Y_train, Y_test = PLSkTopicsOut(mat, known_topics, seed=i)
 
         pls.fit(X_train, Y_train)
-        prediction = pls.predict(X_test)
+        filled_mat = pls.predict(X_test)
 
         if quarter_round:
-            # prediction = floorNearestQuarter(prediction) # whizz rounds down, but this seems to be much worse in our case
-            prediction = roundNearestQuarter(prediction)
+            # filled_mat = floorNearestQuarter(filled_mat) # whizz rounds down
+            filled_mat = roundNearestQuarter(filled_mat)
 
         for t in range(k):
-            err_t = Y_test[:,t] - prediction[:,t]
-            rmse[t] += np.linalg.norm(err_t, 2) / np.sqrt(len(prediction))
+            filled_vec = filled_mat[:,t]
+            original_vec = Y_test[:,t]
+            topic_error_stats[:,t] += errorStatistics(filled_vec, original_vec, verbose=False)
 
-            percentage_wrong[t] += np.linalg.norm(err_t, 0) *100 / len(prediction)
-
-            err_mean = Y_test[:,t] - X_average
-            comparison_mean[t] += np.linalg.norm(err_mean, 2) / np.sqrt(len(prediction))
-
-    rmse /= nb_repeats
-    percentage_wrong /= nb_repeats
-    comparison_mean /= nb_repeats
+    topic_error_stats /= nb_repeats                  # this could be returned to do inspection by topic
+    error_stats = np.mean(topic_error_stats, axis=1)
 
     if verbose:
         print('Known topics: %s (%d repeats)' % (' - '.join( topic_names[known_topics].tolist() ), nb_repeats) )
-        for t, name in enumerate(topic_names[~mask]):
-            print('%s: \t %.1f \t %.1f \t %.1f' %(name, rmse[t], percentage_wrong[t], comparison_mean[t]) )
-        print('Avg: \t %.1f \t %.1f \t %.1f' %(np.mean(rmse), np.mean(percentage_wrong), np.mean(comparison_mean)) )
 
-    return (rmse, percentage_wrong, comparison_mean)
+        print('Exact: \t\t %.2f %%' %  error_stats[0])
+        print('Within 25:\t %.2f %%' % error_stats[1] )
+        print('Within 50:\t %.2f %%' % error_stats[2] )
+        print('Underestimated:\t %.2f %%' % error_stats[3])
+        print('Overestimated:\t %.2f %%' % error_stats[4])
+        print('RMSE: \t\t %.2f' % error_stats[5])
+
+        # for t, name in enumerate(topic_names[~mask]):
+        #     print('%s: \t %.1f \t %.1f \t %.1f' %(name, rmse[t], percentage_wrong[t], comparison_mean[t]) )
+        # print('Avg: \t %.1f \t %.1f \t %.1f' %(np.mean(rmse), np.mean(percentage_wrong), np.mean(comparison_mean)) )
+
+    avg_rmse = error_stats[5]
+    return avg_rmse
 
 
-def testCombinations(range_mat, k, topic_names, nb_repeats=1, nb_components=2,
-                     mean_fill=True, quarter_round=True, verbose=True):
-    nb_topics, _ = range_mat.shape
+def testCombinations(mat, k, topic_names, nb_repeats=1, nb_components=2,
+                     quarter_round=True, verbose=True):
+
+    nb_topics, _ = mat.shape
     topic_combs = itertools.combinations(range(nb_topics), nb_topics - k)
     topic_combs = np.array(list(topic_combs))                 # coverted to array to use as indexes of topic names
 
-    errors = np.zeros(len(topic_combs))
+    avg_rmses = np.zeros(len(topic_combs))
 
     for i, known_topics in enumerate(topic_combs):
+        avg_rmses[i] = repeatPLS(mat, known_topics, topic_names, nb_repeats=nb_repeats, nb_components=nb_components,
+                                 quarter_round=quarter_round, verbose=verbose)
 
-        rmse, _, _ = repeatPLS(range_mat, known_topics, topic_names, nb_repeats=nb_repeats,
-                               nb_components=nb_components, mean_fill=mean_fill,
-                               quarter_round=quarter_round, verbose=verbose)
-        errors[i] = np.mean(rmse)
-
-    best = np.argmin(errors)
-    return (errors[best], topic_names[topic_combs[best]])
+    best = np.argmin(avg_rmses)
+    return (avg_rmses[best], topic_names[topic_combs[best]])

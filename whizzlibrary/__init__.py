@@ -4,7 +4,7 @@ from pymatbridge import Matlab
 
 __all__ = ["startMatlab", "roundNearestQuarter", "floorNearestQuarter",
            "errorStatistics", "kTopicsOut", "repeatMatrixCompletion", "histogramQuarters",
-           "repeatPLS", "testCombinations",
+           "PLSkTopicsOut", "repeatPLS", "testCombinations",
            "plotSingInfo"]
 
 
