@@ -75,7 +75,7 @@ def kTopicsOut(mat, k, seed=0):
 
 
 def repeatMatrixCompletion(connector, mat, k, rank_estimate, alg_tol = 1e-8, nb_repeats=1,
-                           quarter_round=True, verbose=True):
+                           nearest_quarter='round', verbose=True):
 
     error_stats = np.zeros(6)
 
@@ -90,7 +90,9 @@ def repeatMatrixCompletion(connector, mat, k, rank_estimate, alg_tol = 1e-8, nb_
         if iters < 500:
             print("Low iters, possible non-convergence")
 
-        if quarter_round:
+        if nearest_quarter == 'floor':
+            filled_mat = floorNearestQuarter(filled_mat) # whizz rounds down
+        elif nearest_quarter == 'round' or nearest_quarter not in ['round', 'floor']:
             filled_mat = roundNearestQuarter(filled_mat)
 
         filled_vec = filled_mat[idx_i, idx_j]

@@ -24,7 +24,7 @@ def PLSkTopicsOut(mat, known_topics, seed=0):
 
 
 def repeatPLS(mat, known_topics, topic_names, nb_repeats=1, nb_components=2,
-              quarter_round=True, verbose=True):
+              nearest_quarter='round', verbose=True):
 
     nb_topics, _ = mat.shape
     k = nb_topics - len(known_topics)                 # nb of removed topics
@@ -39,8 +39,9 @@ def repeatPLS(mat, known_topics, topic_names, nb_repeats=1, nb_components=2,
         pls.fit(X_train, Y_train)
         filled_mat = pls.predict(X_test)
 
-        if quarter_round:
-            # filled_mat = floorNearestQuarter(filled_mat) # whizz rounds down
+        if nearest_quarter == 'floor':
+            filled_mat = floorNearestQuarter(filled_mat) # whizz rounds down
+        elif nearest_quarter == 'round' or nearest_quarter not in ['round', 'floor']:
             filled_mat = roundNearestQuarter(filled_mat)
 
         for t in range(k):
@@ -70,7 +71,7 @@ def repeatPLS(mat, known_topics, topic_names, nb_repeats=1, nb_components=2,
 
 
 def testCombinations(mat, k, topic_names, nb_repeats=1, nb_components=2,
-                     quarter_round=True, verbose=True):
+                     nearest_quarter='round', verbose=True):
 
     nb_topics, _ = mat.shape
     topic_combs = itertools.combinations(range(nb_topics), nb_topics - k)
@@ -80,7 +81,7 @@ def testCombinations(mat, k, topic_names, nb_repeats=1, nb_components=2,
 
     for i, known_topics in enumerate(topic_combs):
         avg_rmses[i] = repeatPLS(mat, known_topics, topic_names, nb_repeats=nb_repeats, nb_components=nb_components,
-                                 quarter_round=quarter_round, verbose=verbose)
+                                 nearest_quarter='round', verbose=verbose)
 
     best = np.argmin(avg_rmses)
     return (avg_rmses[best], topic_names[topic_combs[best]], topic_combs[best])
