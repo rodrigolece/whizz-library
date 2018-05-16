@@ -82,7 +82,7 @@ def repeatMatrixCompletion(connector, mat, k, rank_estimate, alg_tol = 1e-8, nb_
     for i in range(nb_repeats):
         incomplete_mat, idx_i, idx_j = kTopicsOut(mat, k, seed=i)
 
-        res = connector.run_func('callMCNMF.m', {'range_mat': incomplete_mat, 'rank_estimate': rank_estimate, 'seed': 0, 'alg_tol': alg_tol}, nargout=2)
+        res = connector.run_func('callMCNMF.m', {'mat': incomplete_mat, 'rank_estimate': rank_estimate, 'seed': 0, 'alg_tol': alg_tol}, nargout=2)
         filled_mat, iters = res['result']
 
         # print('Iter: ', i, '\t Algorithm returned after: ', iters)

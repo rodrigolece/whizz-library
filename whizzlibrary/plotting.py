@@ -5,7 +5,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes  # to use the inset
 
 
 
-def plotSingInfo(mat, nb_vecs, topic_names):
+def plotSingInfo(mat, topic_names, nb_vecs=4):
     nb_topics = len(topic_names)
 
     u, s, vt = np.linalg.svd(mat, full_matrices=False)         # full_matrices False means that v is m by n

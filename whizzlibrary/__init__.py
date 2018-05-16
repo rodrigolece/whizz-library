@@ -15,16 +15,24 @@ def floorNearestQuarter(x):
     return 25*np.floor(x/25)
 
 
-def startMatlab(nonnegative_dir):
+def startMatlab(nonnegative_dir, hardthresh_dir):
     mlab = Matlab()
     mlab.start()
 
-    res = mlab.run_code("path(path,genpath('%s'))" % nonnegative_dir)
-    if res['success']:
-        print("Matlab connection succesfully started")
-        return mlab
+    # I could do a cd here to make sure that the call functions are in the working dir
+
+    status1 = mlab.run_code("addpath %s" % nonnegative_dir)['success']
+    status2 = mlab.run_code("addpath %s/Main" % hardthresh_dir)
+    status3 = mlab.run_code("addpath %s/Auxiliary" % hardthresh_dir)
+
+    if status1 and status2 and status3:
+        print("Libraries succesfully loaded")
     else:
-        print("Error starting Matlab")
+        print("Error loading libraries")
+        return
+
+    return mlab
+
 
 from .matrix_completion import *
 from .plotting import *
