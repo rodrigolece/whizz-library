@@ -5,7 +5,7 @@ from pymatbridge import Matlab
 __all__ = ["startMatlab", "roundNearestQuarter", "floorNearestQuarter",
            "errorStatistics", "kTopicsOut", "repeatMatrixCompletion", "histogramQuarters",
            "PLSkTopicsOut", "repeatPLS", "testCombinations",
-           "plotSingInfo"]
+           "plotSingInfo", "correlationMat", "plotCorrelations"]
 
 
 def roundNearestQuarter(x):

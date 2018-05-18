@@ -65,7 +65,7 @@ def kTopicsOut(mat, k, seed=0):
     nb_topics, nb_pupils = mat.shape
 
     np.random.seed(seed)
-    idx_i = np.array([np.random.choice(nb_topics, size=k, replace=False) for _ in range(nb_pupils)]).T.reshape(-1) # transpose because the entries of a student are along rows
+    idx_i = np.array([np.random.choice(nb_topics, size=k, replace=False) for _ in range(nb_pupils)]).T.reshape(-1) # T because the choices for a student are along rows, and reshape concatenates cols
     idx_j = np.array(list(range(nb_pupils)) * k)
 
     incomplete_mat = mat.copy()

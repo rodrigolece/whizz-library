@@ -1,7 +1,10 @@
 
 import numpy as np
+import scipy.stats as st # for pearsonr, has to be imported explicitly
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes  # to use the inset in subplot
+from mpl_toolkits.axes_grid1 import make_axes_locatable         # to scale the colorbar
 
 
 
@@ -45,3 +48,57 @@ def plotSingInfo(mat, topic_names, nb_vecs=4):
     plt.grid()
 
     # plt.tight_layout() # incompatible with inset_ax
+
+
+def correlationMat(mat):
+    nb_topics, _ = mat.shape
+    correl_mat = np.zeros((nb_topics, nb_topics))
+
+    for i in range(nb_topics):
+        for j in range(i,nb_topics):
+            correl_mat[i,j], _ = st.pearsonr(mat[i,:], mat[j,:])
+
+    correl_mat[correl_mat == 0.0] = np.nan
+
+    return correl_mat
+
+
+def plotCorrelations(mat, topic_names):
+    correl_mat = correlationMat(mat)
+    nb_topics = len(topic_names)
+
+    triu = np.triu(correl_mat, k=1)
+    triu = triu[np.nonzero(triu)]
+    m, M = np.min(triu), np.max(triu)
+
+    topics_min = np.concatenate(np.where(correl_mat == m))
+    topics_max = np.concatenate(np.where(correl_mat == M))
+
+    _, axes = plt.subplots(figsize=(15, 4), ncols=3) #figsize=(nb_topics+1,nb_topics+1)
+    plt.sca(axes[0])
+    plt.imshow(correl_mat, vmin=0)
+
+    axes[0].xaxis.tick_top()
+    axes[0].yaxis.tick_right()
+    plt.xticks(range(nb_topics), topic_names)
+    plt.yticks(range(nb_topics), topic_names)
+
+    divider = make_axes_locatable(axes[0])
+    cax = divider.append_axes('right', size='5%', pad=0.5)
+    plt.colorbar(cax=cax)
+
+    plt.sca(axes[1])
+    plt.plot(mat[topics_min[0],:], mat[topics_min[1],:], 'o')
+    plt.axis('equal')
+    plt.xlabel(topic_names[topics_min[0]])
+    plt.ylabel(topic_names[topics_min[1]])
+    plt.title('%s:   rho = %.3f' % ('-'.join(topic_names[topics_min]), m ))
+
+    plt.sca(axes[2])
+    plt.plot(mat[topics_max[0],:], mat[topics_max[1],:], 'o')
+    plt.axis('equal')
+    plt.xlabel(topic_names[topics_max[0]])
+    plt.ylabel(topic_names[topics_max[1]])
+    plt.title('%s:   rho = %.3f' % ('-'.join(topic_names[topics_max]), M ))
+
+    plt.tight_layout()
