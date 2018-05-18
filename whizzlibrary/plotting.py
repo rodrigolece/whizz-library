@@ -6,6 +6,25 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes  # to use the inset in subplot
 from mpl_toolkits.axes_grid1 import make_axes_locatable         # to scale the colorbar
 
+from .matrix_completion import histogramQuarters
+
+
+
+def plotTopicHistograms(mat, topic_names):
+    nb_topics, nb_pupils = mat.shape
+
+    plt.figure(figsize=(8,4))
+
+    for i in range(nb_topics):
+        counts, bins = histogramQuarters(mat[i,:])
+
+        counts /= nb_pupils
+        centers = bins[:-1] + 12.5
+
+        plt.bar(centers, counts, 25, alpha=0.6, label=topic_names[i])
+        plt.plot(centers, counts, 'o', ms=4)
+
+    plt.legend()
 
 
 def plotSingInfo(mat, topic_names, nb_vecs=4):
@@ -92,7 +111,7 @@ def plotCorrelations(mat, topic_names):
     plt.axis('equal')
     plt.xlabel(topic_names[topics_min[0]])
     plt.ylabel(topic_names[topics_min[1]])
-    plt.title('%s:   rho = %.3f' % ('-'.join(topic_names[topics_min]), m ))
+    plt.title('%s  (rho = %.3f)' % (' - '.join(topic_names[topics_min]), m ))
 
     plt.sca(axes[2])
     plt.plot(mat[topics_max[0],:], mat[topics_max[1],:], 'o')
