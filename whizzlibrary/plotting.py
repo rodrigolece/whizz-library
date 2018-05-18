@@ -38,6 +38,7 @@ def plotSingInfo(mat, topic_names, nb_vecs=4):
 
     plt.sca(axes[0,0])
     plt.imshow(mat, aspect='auto', vmin=0, vmax=1400)
+    plt.yticks(range(nb_topics), topic_names)
 
     plt.sca(axes[0,1])
     plt.semilogy(s)
