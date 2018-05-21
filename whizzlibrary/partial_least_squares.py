@@ -4,8 +4,7 @@ import itertools
 from sklearn.model_selection import train_test_split
 from sklearn.cross_decomposition import PLSRegression
 
-from . import roundNearestQuarter, floorNearestQuarter
-from .matrix_completion import errorStatistics
+from .quarters import roundNearestQuarter, floorNearestQuarter, errorStatistics
 
 
 

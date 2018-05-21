@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes  # to use the inset in subplot
 from mpl_toolkits.axes_grid1 import make_axes_locatable         # to scale the colorbar
 
-from .matrix_completion import histogramQuarters
+from .quarters import histogramQuarters
 
 
 

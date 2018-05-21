@@ -1,19 +1,13 @@
 
-import numpy as np
 from pymatbridge import Matlab
 
 __all__ = ["startMatlab", "roundNearestQuarter", "floorNearestQuarter",
            "histogramQuarters", "errorStatistics", "kTopicsOut",
-           "nonnegativeMatrixCompletion", "repeatMatrixCompletion", 
+           "nonnegativeMatrixCompletion", "repeatMatrixCompletion",
            "PLSkTopicsOut", "repeatPLS", "testCombinations",
            "plotTopicHistograms", "plotSingInfo", "correlationMat", "plotCorrelations"]
 
 
-def roundNearestQuarter(x):
-    return 25*np.round(x/25)
-
-def floorNearestQuarter(x):
-    return 25*np.floor(x/25)
 
 
 def startMatlab(nonnegative_dir, hardthresh_dir):
@@ -34,7 +28,7 @@ def startMatlab(nonnegative_dir, hardthresh_dir):
 
     return mlab
 
-
+from .quarters import *
 from .matrix_completion import *
 from .plotting import *
 from .partial_least_squares import *
