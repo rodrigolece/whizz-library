@@ -74,31 +74,37 @@ def kTopicsOut(mat, k, seed=0):
     return incomplete_mat, idx_i, idx_j
 
 
-def repeatMatrixCompletion(connector, mat, k, rank_estimate, alg_tol = 1e-8, nb_repeats=1,
-                           nearest_quarter='round', verbose=True):
+def nonnegativeMatrixCompletion(connector, mat, k, rank_estimate, seed, alg_tol=1e-8,
+                                nearest_quarter='round'):
+    incomplete_mat, idx_i, idx_j = kTopicsOut(mat, k, seed=seed)
 
+    # to select the observations (non-zero entries)
+    mask = np.ones(mat.shape, dtype=bool)
+    mask[idx_i, idx_j] = 0
+
+    res = connector.run_func('callMCNMF.m', {'mat': incomplete_mat, 'rank_estimate': rank_estimate, 'seed': 0, 'alg_tol': alg_tol}, nargout=2)
+    filled_mat, iters = res['result']
+
+    print('Iterations: ', iters)
+
+    if nearest_quarter == 'floor':
+        filled_mat = floorNearestQuarter(filled_mat) # whizz rounds down
+    elif nearest_quarter == 'round' or nearest_quarter not in ['round', 'floor']:
+        filled_mat = roundNearestQuarter(filled_mat)
+
+    return filled_mat[idx_i, idx_j], mat[idx_i, idx_j], filled_mat[mask], mat[mask]
+
+
+def repeatMatrixCompletion(connector, mat, k, rank_estimate, alg_tol=1e-8, nb_repeats=1,
+                           nearest_quarter='round', verbose=True):
     error_stats = np.zeros(6)
 
     for i in range(nb_repeats):
-        incomplete_mat, idx_i, idx_j = kTopicsOut(mat, k, seed=i)
+        filled, original, recovered_obs, obs = nonnegativeMatrixCompletion(connector, mat, k, rank_estimate, i,
+        alg_tol=alg_tol, nearest_quarter=nearest_quarter)
 
-        res = connector.run_func('callMCNMF.m', {'mat': incomplete_mat, 'rank_estimate': rank_estimate, 'seed': 0, 'alg_tol': alg_tol}, nargout=2)
-        filled_mat, iters = res['result']
-
-        # print('Iter: ', i, '\t Algorithm returned after: ', iters)
-
-        if iters < 500:
-            print("Low iters, possible non-convergence")
-
-        if nearest_quarter == 'floor':
-            filled_mat = floorNearestQuarter(filled_mat) # whizz rounds down
-        elif nearest_quarter == 'round' or nearest_quarter not in ['round', 'floor']:
-            filled_mat = roundNearestQuarter(filled_mat)
-
-        filled_vec = filled_mat[idx_i, idx_j]
-        original_vec = mat[idx_i, idx_j]
-
-        error_stats += errorStatistics(filled_vec, original_vec, verbose=False)
+        error_stats += errorStatistics(filled, original, verbose=False)
+        print('Observations recovered: ', errorStatistics(recovered_obs, obs, verbose=False)[0])
 
     error_stats /= nb_repeats
 

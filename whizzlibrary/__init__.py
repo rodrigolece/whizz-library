@@ -3,7 +3,8 @@ import numpy as np
 from pymatbridge import Matlab
 
 __all__ = ["startMatlab", "roundNearestQuarter", "floorNearestQuarter",
-           "errorStatistics", "kTopicsOut", "repeatMatrixCompletion", "histogramQuarters",
+           "histogramQuarters", "errorStatistics", "kTopicsOut",
+           "nonnegativeMatrixCompletion", "repeatMatrixCompletion", 
            "PLSkTopicsOut", "repeatPLS", "testCombinations",
            "plotTopicHistograms", "plotSingInfo", "correlationMat", "plotCorrelations"]
 
