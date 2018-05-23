@@ -10,13 +10,18 @@ from .quarters import histogramQuarters
 
 
 
-def plotTopicHistograms(mat, topic_names):
+def plotTopicHistograms(mat, topic_names, ignore_empty=False):
     nb_topics, nb_pupils = mat.shape
 
     plt.figure(figsize=(8,4))
 
     for i in range(nb_topics):
         counts, bins = histogramQuarters(mat[i,:])
+
+        if ignore_empty and bins[0] == -12.5:
+            idx = np.nonzero(counts)[0]           # returns (i,j) indices as for a matrix
+            first_nonzero = idx[1]
+            counts, bins = counts[first_nonzero:], bins[first_nonzero:]
 
         counts /= nb_pupils
         centers = bins[:-1] + 12.5
