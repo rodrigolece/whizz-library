@@ -23,7 +23,7 @@ def PLSkTopicsOut(mat, known_topics, seed=0):
 
 
 def repeatPLS(mat, known_topics, topic_names, nb_repeats=1, nb_components=2,
-              nearest_quarter='round', verbose=True):
+              nearest_quarter='round', split_topics=False, verbose=True):
 
     nb_topics, _ = mat.shape
     k = nb_topics - len(known_topics)                 # nb of removed topics
@@ -65,6 +65,9 @@ def repeatPLS(mat, known_topics, topic_names, nb_repeats=1, nb_components=2,
         #     print('%s: \t %.1f \t %.1f \t %.1f' %(name, rmse[t], percentage_wrong[t], comparison_mean[t]) )
         # print('Avg: \t %.1f \t %.1f \t %.1f' %(np.mean(rmse), np.mean(percentage_wrong), np.mean(comparison_mean)) )
 
+    if split_topics:
+        return topic_error_stats
+    
     avg_rmse = error_stats[5]
     return avg_rmse
 
