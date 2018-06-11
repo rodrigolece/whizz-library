@@ -5,7 +5,9 @@ __all__ = ["startMatlab", "roundNearestQuarter", "floorNearestQuarter",
            "histogramQuarters", "errorStatistics", "kTopicsOut",
            "nonnegativeMatrixCompletion", "repeatMatrixCompletion",
            "PLSkTopicsOut", "repeatPLS", "testCombinations",
-           "plotTopicHistograms", "plotSingInfo", "correlationMat", "plotCorrelations"]
+           "plotTopicHistograms", "plotSingInfo", "correlationMat", "plotCorrelations",
+           "runningMathsAge", "classifyInQuarters", "findSecondTopic", "classifyStudent",
+           "TopicSequencer", "rangeExperimentPLS", "repeatRangeExperimentPLS"]
 
 
 
@@ -32,3 +34,6 @@ from .quarters import *
 from .matrix_completion import *
 from .plotting import *
 from .partial_least_squares import *
+from .agerange_classification import *
+from .topic_sequencer import *
+from .pls_experiment import *
