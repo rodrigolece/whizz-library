@@ -67,3 +67,50 @@ def repeatMatrixCompletion(connector, mat, k, rank_estimate, alg_tol=1e-8, nb_re
         print('Underestimated:\t %.2f %%' % error_stats[3])
         print('Overestimated:\t %.2f %%' % error_stats[4])
         print('RMSE: \t\t %.2f' % error_stats[5])
+
+
+def meanFill(incomplete_mat, idx, nearest_quarter='round'):
+    # The zero entries
+    idx_i, idx_j = idx
+
+    nan_mat = incomplete_mat.copy()
+    nan_mat[idx_i, idx_j] = np.nan
+    col_avg = np.nanmean(nan_mat, axis=0)
+
+    for i in range(len(col_avg)):
+        col = nan_mat[:,i]
+        nan_mat[np.isnan(col), i] = col_avg[i]
+
+    filled_entries = nan_mat[idx_i, idx_j]
+
+    if nearest_quarter == 'floor':
+        filled_entries = floorNearestQuarter(filled_entries) # whizz rounds down
+    elif nearest_quarter == 'round' or nearest_quarter not in ['round', 'floor']:
+        filled_entries = roundNearestQuarter(filled_entries)
+
+    return filled_entries
+
+
+def repeatMeanFill(mat, budget_k, nb_repeats=1, nearest_quarter='round', verbose=True):
+    error_stats = np.zeros(6)
+
+    for i in range(nb_repeats):
+        incomplete_mat, idx_i, idx_j = kTopicsOut(mat, budget_k, seed=i)
+
+        filled = meanFill(incomplete_mat, (idx_i, idx_j), nearest_quarter=nearest_quarter)
+        original = mat[idx_i, idx_j]
+
+        error_stats += errorStatistics(filled, original, verbose=False)
+
+    error_stats /= nb_repeats
+
+    if verbose:
+        print('(%d repeats)'% nb_repeats)
+        print('Exact: \t\t %.2f %%' %  error_stats[0])
+        print('Within 25:\t %.2f %%' % error_stats[1] )
+        print('Within 50:\t %.2f %%' % error_stats[2] )
+        print('Underestimated:\t %.2f %%' % error_stats[3])
+        print('Overestimated:\t %.2f %%' % error_stats[4])
+        print('RMSE: \t\t %.2f' % error_stats[5])
+
+    return error_stats
